@@ -2,6 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/common/database/database.service';
 import { UUID } from 'src/common/entities/uuid/uuid.entity';
 import { UUIDFactory } from 'src/common/entities/uuid/uuid.factory';
+import { CredentialEntity } from './domain/credential.entity';
+import { CredentialMapper } from './domain/credential.mapper';
+import { CredentialAlreadyExistsForUserException } from './credentials.errors';
+import { PrismaTransaction } from 'src/common/database/__types__/database.types';
 
 @Injectable()
 export class CredentialsService {
@@ -15,33 +19,39 @@ export class CredentialsService {
     });
 
     if (!credential) {
-      this.logger.warn(`No credential found for user ID: ${userId.value}`);
       return null;
     }
 
-    this.logger.log(`Found credential for user ID: ${userId.value}`);
-    return credential;
+    this.logger.log(`Found credential for user ID=${userId.value}`);
+    return CredentialMapper.toDomain(credential);
   }
 
-  async createCredential(userId: UUID, passwordHash: string) {
-    const id = UUIDFactory.create();
+  async createCredential(
+    credential: CredentialEntity,
+    tx?: PrismaTransaction,
+  ): Promise<CredentialEntity> {
+    const client = tx ?? this.prisma;
 
-    this.logger.log(`Creating credential for user ID: ${userId.value}`);
+    const existingCredential = await this.findByUserId(credential.userId);
 
-    const credential = await this.prisma.credential.create({
+    if (existingCredential) {
+      throw new CredentialAlreadyExistsForUserException();
+    }
+
+    this.logger.log(
+      `Creating credential for user ID=${credential.userId.value}`,
+    );
+
+    const raw = await client.credential.create({
       data: {
-        id: id.value,
+        id: credential.id.value,
         user: {
-          connect: { id: userId.value },
+          connect: { id: credential.userId.value },
         },
-        passwordHash,
+        passwordHash: credential.passwordHash,
       },
     });
 
-    this.logger.log(
-      `Credential created with ID: ${id.value} for user ID: ${userId.value}`,
-    );
-
-    return credential;
+    return CredentialMapper.toDomain(raw);
   }
 }

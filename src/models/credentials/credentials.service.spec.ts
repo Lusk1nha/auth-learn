@@ -5,7 +5,9 @@ import { UUIDFactory } from 'src/common/entities/uuid/uuid.factory';
 import { faker } from '@faker-js/faker';
 import { generateSingleMockCredential } from './__mock__/credentials.mock';
 
-jest.mock('src/common/entities/uuid/uuid.factory');
+import { CredentialEntity } from './domain/credential.entity';
+import { CredentialMapper } from './domain/credential.mapper';
+import { CredentialAlreadyExistsForUserException } from './credentials.errors';
 
 describe(CredentialsService.name, () => {
   let service: CredentialsService;
@@ -56,8 +58,6 @@ describe(CredentialsService.name, () => {
         .spyOn(prismaService.credential, 'findUnique')
         .mockResolvedValue(credentialFound);
 
-      (UUIDFactory.from as jest.Mock).mockReturnValue({ value: userId });
-
       const result = await service.findByUserId(UUIDFactory.from(userId));
 
       if (!result) {
@@ -65,8 +65,8 @@ describe(CredentialsService.name, () => {
       }
 
       expect(result).toBeDefined();
-      expect(result.id).toEqual(mockId);
-      expect(result.userId).toEqual(userId);
+      expect(result.id).toEqual(UUIDFactory.from(mockId));
+      expect(result.userId).toEqual(UUIDFactory.from(userId));
       expect(prismaService.credential.findUnique).toHaveBeenCalledWith({
         where: { userId },
       });
@@ -77,8 +77,6 @@ describe(CredentialsService.name, () => {
       jest
         .spyOn(prismaService.credential, 'findUnique')
         .mockResolvedValue(null);
-
-      (UUIDFactory.from as jest.Mock).mockReturnValue({ value: userId });
 
       const result = await service.findByUserId(UUIDFactory.from(userId));
       expect(result).toBeNull();
@@ -95,17 +93,17 @@ describe(CredentialsService.name, () => {
       const userId = faker.string.uuid();
       const passwordHash = faker.string.alphanumeric(64);
 
-      const uuidUser = { value: userId };
-      const uuidCredential = { value: mockId };
-
       const credentialCreated = generateSingleMockCredential({
         id: mockId,
         userId,
         passwordHash,
       });
 
-      (UUIDFactory.create as jest.Mock).mockReturnValue(uuidCredential);
-      (UUIDFactory.from as jest.Mock).mockReturnValue(uuidUser);
+      const credentialEntity = CredentialEntity.createNew(
+        UUIDFactory.from(mockId),
+        UUIDFactory.from(userId),
+        passwordHash,
+      );
 
       jest
         .spyOn(prismaService.credential, 'create')
@@ -114,12 +112,9 @@ describe(CredentialsService.name, () => {
         .spyOn(prismaService.credential, 'findUnique')
         .mockResolvedValue(null);
 
-      const result = await service.createCredential(
-        UUIDFactory.from(userId),
-        passwordHash,
-      );
+      const result = await service.createCredential(credentialEntity);
 
-      expect(result).toEqual(credentialCreated);
+      expect(result).toEqual(CredentialMapper.toDomain(credentialCreated));
       expect(prismaService.credential.create).toHaveBeenCalledWith({
         data: {
           id: mockId,
@@ -129,6 +124,32 @@ describe(CredentialsService.name, () => {
           passwordHash,
         },
       });
+    });
+
+    it('should throw an error if credential already exists for user', async () => {
+      const mockId = faker.string.uuid();
+      const userId = faker.string.uuid();
+      const passwordHash = faker.string.alphanumeric(64);
+
+      const existingCredential = generateSingleMockCredential({
+        id: mockId,
+        userId,
+        passwordHash,
+      });
+
+      const credentialEntity = CredentialEntity.createNew(
+        UUIDFactory.from(mockId),
+        UUIDFactory.from(userId),
+        passwordHash,
+      );
+
+      jest
+        .spyOn(prismaService.credential, 'findUnique')
+        .mockResolvedValue(existingCredential);
+
+      await expect(service.createCredential(credentialEntity)).rejects.toThrow(
+        new CredentialAlreadyExistsForUserException(),
+      );
     });
   });
 });

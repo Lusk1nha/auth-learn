@@ -4,7 +4,9 @@ import { PrismaService } from 'src/common/database/database.service';
 import { EmailAddress } from 'src/common/entities/email-address/email-address.entity';
 
 import { UserAlreadyExistsException } from './users.errors';
-import { UUIDFactory } from 'src/common/entities/uuid/uuid.factory';
+import { UserEntity } from './domain/user.entity';
+import { UserMapper } from './domain/user.mapper';
+import { PrismaTransaction } from 'src/common/database/__types__/database.types';
 
 @Injectable()
 export class UsersService {
@@ -12,42 +14,40 @@ export class UsersService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUserByEmail(email: EmailAddress) {
+  async findByEmail(email: EmailAddress): Promise<UserEntity | null> {
     const user = await this.prisma.user.findUnique({
       where: { email: email.value },
     });
 
     if (!user) {
-      this.logger.warn(`No user found with email: ${email.value}`);
       return null;
     }
 
-    this.logger.log(`Found user with email: ${email.value}`);
-    return user;
+    this.logger.log(`Found user with email=${email.value}`);
+    return UserMapper.toDomain(user);
   }
 
-  async createUser(email: EmailAddress) {
-    const existingUser = await this.findUserByEmail(email);
+  async createUser(
+    user: UserEntity,
+    tx?: PrismaTransaction,
+  ): Promise<UserEntity> {
+    const client = tx ?? this.prisma;
+
+    const existingUser = await this.findByEmail(user.email);
 
     if (existingUser) {
-      throw new UserAlreadyExistsException(email.value);
+      throw new UserAlreadyExistsException();
     }
 
-    this.logger.log(`Creating user with email: ${email.value}`);
+    this.logger.log(`Creating user with email=${user.email.value}`);
 
-    const id = UUIDFactory.create();
-
-    const user = this.prisma.user.create({
+    const raw = await client.user.create({
       data: {
-        id: id.value,
-        email: email.value,
+        id: user.id.value,
+        email: user.email.value,
       },
     });
 
-    this.logger.log(
-      `User created with ID: ${id.value} and email: ${email.value}`,
-    );
-
-    return user;
+    return UserMapper.toDomain(raw);
   }
 }

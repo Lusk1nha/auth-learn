@@ -6,7 +6,7 @@ import { setupSwagger } from './common/setup/swagger/swagger.setup';
 import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
-  const port = process.env.PORT || 3000;
+  const port = process.env.APP_PORT || 3000;
   const environment = process.env.NODE_ENV || 'development';
 
   const app = await NestFactory.create(AppModule, {

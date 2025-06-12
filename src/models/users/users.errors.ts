@@ -16,10 +16,10 @@ export class UserNotFoundException extends BaseHttpException {
 }
 
 export class UserAlreadyExistsException extends BaseHttpException {
-  constructor(email: string) {
+  constructor() {
     super(
       {
-        message: 'User with email address already exists: ' + email,
+        message: 'User with email address already exists',
         code: 'USER_ALREADY_EXISTS',
         status: HttpStatus.CONFLICT,
       },
