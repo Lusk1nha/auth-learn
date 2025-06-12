@@ -1,4 +1,4 @@
-import { faker } from '@faker-js/faker/.';
+import { faker } from '@faker-js/faker';
 import { UUIDFactory } from './uuid.factory';
 import { InvalidUuidException } from './uuid.errors';
 import { UUID } from './uuid.entity';

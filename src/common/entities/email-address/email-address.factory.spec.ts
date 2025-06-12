@@ -1,4 +1,4 @@
-import { faker } from '@faker-js/faker/.';
+import { faker } from '@faker-js/faker';
 import { EmailAddressFactory } from './email-address.factory';
 import { InvalidEmailAddressException } from './email-address.errors';
 

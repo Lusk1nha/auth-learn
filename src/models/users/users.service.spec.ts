@@ -6,6 +6,10 @@ import { User } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import { EmailAddressFactory } from 'src/common/entities/email-address/email-address.factory';
 import { UUIDFactory } from 'src/common/entities/uuid/uuid.factory';
+import {
+  generateMockUsers,
+  generateSingleMockUser,
+} from './__mock__/users.mock';
 
 jest.mock('src/common/entities/uuid/uuid.factory');
 
@@ -40,18 +44,57 @@ describe(UsersService.name, () => {
     expect(prismaService).toBeDefined();
   });
 
-  describe('Create new user', () => {
-    it('should create a new user', async () => {
-      const mockId = faker.string.uuid(); // ID simulado
+  describe('Find user by email', () => {
+    it(`should be defined ${UsersService.prototype.findUserByEmail.name}`, () => {
+      expect(service.findUserByEmail).toBeDefined();
+    });
+
+    it('should return a user if found by email', async () => {
       const email = faker.internet.email();
-      const userCreated: User = {
+      const mockId = faker.string.uuid();
+
+      const userFound = generateSingleMockUser({
         id: mockId,
         email,
-        name: null,
+      });
+
+      jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(userFound);
+
+      const result = await service.findUserByEmail(
+        EmailAddressFactory.from(email),
+      );
+      expect(result).toEqual(userFound);
+      expect(prismaService.user.findUnique).toHaveBeenCalledWith({
+        where: { email },
+      });
+    });
+
+    it('should return null if no user found', async () => {
+      const email = faker.internet.email();
+      jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(null);
+
+      const result = await service.findUserByEmail(
+        EmailAddressFactory.from(email),
+      );
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('Create new user', () => {
+    it(`should be defined ${UsersService.prototype.createUser.name}`, () => {
+      expect(service.createUser).toBeDefined();
+    });
+
+    it('should create a new user', async () => {
+      const mockId = faker.string.uuid();
+      const email = faker.internet.email();
+
+      const userCreated: User = generateSingleMockUser({
+        id: mockId,
+        email,
         image: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+        name: null,
+      });
 
       (UUIDFactory.create as jest.Mock).mockReturnValue({ value: mockId });
 
