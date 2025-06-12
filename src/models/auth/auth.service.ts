@@ -10,7 +10,16 @@ import { EmailAddressFactory } from 'src/common/entities/email-address/email-add
 import { PasswordFactory } from 'src/common/entities/password/password.factory';
 import { CredentialEntity } from '../credentials/domain/credential.entity';
 import { PrismaService } from 'src/common/database/database.service';
+import { LoginUserDto } from './dto/login-user.dto';
 
+/**
+ * O AuthService é responsável por gerenciar a autenticação e o registro de usuários.
+ * Segui um principio de responsabilidade única, focando apenas em autenticação e registro.
+ * Ele não deve lidar com lógica de negócios relacionada a usuários ou credenciais.
+ *
+ * Obs: VO (Valor Object) são utilizados para encapsular regras de validação e garantir a integridade dos dados.
+ * Exemplo: EmailAddressFactory, PasswordFactory.
+ */
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -25,6 +34,7 @@ export class AuthService {
   async register(dto: RegisterUserDto) {
     const userId = UUIDFactory.create();
     const emailVo = EmailAddressFactory.from(dto.email);
+
     const passwordVo = PasswordFactory.from(dto.password);
     const passwordHash = await this.passwordService.hashPassword(passwordVo);
 
@@ -48,5 +58,9 @@ export class AuthService {
     );
 
     console.log(createdUser, createdCred);
+  }
+
+  async login(dto: LoginUserDto) {
+    return;
   }
 }
