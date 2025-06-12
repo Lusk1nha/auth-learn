@@ -6,12 +6,11 @@ import { User } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import { EmailAddressFactory } from 'src/common/entities/email-address/email-address.factory';
 import { UUIDFactory } from 'src/common/entities/uuid/uuid.factory';
-import {
-  generateMockUsers,
-  generateSingleMockUser,
-} from './__mock__/users.mock';
+import { generateSingleMockUser } from './__mock__/users.mock';
 
-jest.mock('src/common/entities/uuid/uuid.factory');
+import { UserEntity } from './domain/user.entity';
+import { UserMapper } from './domain/user.mapper';
+import { UserAlreadyExistsException } from './users.errors';
 
 describe(UsersService.name, () => {
   let service: UsersService;
@@ -45,8 +44,8 @@ describe(UsersService.name, () => {
   });
 
   describe('Find user by email', () => {
-    it(`should be defined ${UsersService.prototype.findUserByEmail.name}`, () => {
-      expect(service.findUserByEmail).toBeDefined();
+    it(`should be defined ${UsersService.prototype.findByEmail.name}`, () => {
+      expect(service.findByEmail).toBeDefined();
     });
 
     it('should return a user if found by email', async () => {
@@ -60,10 +59,8 @@ describe(UsersService.name, () => {
 
       jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(userFound);
 
-      const result = await service.findUserByEmail(
-        EmailAddressFactory.from(email),
-      );
-      expect(result).toEqual(userFound);
+      const result = await service.findByEmail(EmailAddressFactory.from(email));
+      expect(result).toEqual(UserMapper.toDomain(userFound));
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email },
       });
@@ -73,9 +70,7 @@ describe(UsersService.name, () => {
       const email = faker.internet.email();
       jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(null);
 
-      const result = await service.findUserByEmail(
-        EmailAddressFactory.from(email),
-      );
+      const result = await service.findByEmail(EmailAddressFactory.from(email));
       expect(result).toBeNull();
     });
   });
@@ -89,6 +84,11 @@ describe(UsersService.name, () => {
       const mockId = faker.string.uuid();
       const email = faker.internet.email();
 
+      const userEntity = UserEntity.createNew(
+        UUIDFactory.from(mockId),
+        EmailAddressFactory.from(email),
+      );
+
       const userCreated: User = generateSingleMockUser({
         id: mockId,
         email,
@@ -96,20 +96,43 @@ describe(UsersService.name, () => {
         name: null,
       });
 
-      (UUIDFactory.create as jest.Mock).mockReturnValue({ value: mockId });
-
       jest.spyOn(prismaService.user, 'create').mockResolvedValue(userCreated);
       jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(null);
 
-      const result = await service.createUser(EmailAddressFactory.from(email));
+      const result = await service.createUser(userEntity);
 
-      expect(result).toEqual(userCreated);
+      expect(result).toEqual(UserMapper.toDomain(userCreated));
       expect(prismaService.user.create).toHaveBeenCalledWith({
         data: {
           id: mockId,
           email,
         },
       });
+    });
+
+    it('should throw an error if user already exists', async () => {
+      const mockId = faker.string.uuid();
+      const email = faker.internet.email();
+
+      const userEntity = UserEntity.createNew(
+        UUIDFactory.from(mockId),
+        EmailAddressFactory.from(email),
+      );
+
+      const existingUser: User = generateSingleMockUser({
+        id: mockId,
+        email,
+        image: null,
+        name: null,
+      });
+
+      jest
+        .spyOn(prismaService.user, 'findUnique')
+        .mockResolvedValue(existingUser);
+
+      await expect(service.createUser(userEntity)).rejects.toThrow(
+        new UserAlreadyExistsException(),
+      );
     });
   });
 });

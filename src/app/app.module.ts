@@ -9,6 +9,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaService } from '../common/database/database.service';
 import { CredentialsModule } from '../models/credentials/credentials.module';
 import { PasswordModule } from 'src/models/password/password.module';
+import { AuthModule } from 'src/models/auth/auth.module';
 
 const validationSchema = Joi.object({
   APP_PORT: Joi.number().integer().positive().default(3000),
@@ -27,6 +28,7 @@ const validationSchema = Joi.object({
     UsersModule,
     CredentialsModule,
     PasswordModule,
+    AuthModule,
   ],
   providers: [PrismaService],
 })
