@@ -22,7 +22,9 @@ export class CredentialsService {
       return null;
     }
 
-    this.logger.log(`Found credential for user ID=${userId.value}`);
+    this.logger.log(
+      `[findByUserId] Found credential for user ID=${userId.value}`,
+    );
     return CredentialMapper.toDomain(credential);
   }
 
@@ -39,7 +41,7 @@ export class CredentialsService {
     }
 
     this.logger.log(
-      `Creating credential for user ID=${credential.userId.value}`,
+      `[createCredential] Creating credential for user ID=${credential.userId.value}`,
     );
 
     const raw = await client.credential.create({

@@ -17,6 +17,7 @@ import { UserNotFoundException } from '../users/users.errors';
 import { UUID } from 'src/common/entities/uuid/uuid.entity';
 import { CredentialNotFoundException } from '../credentials/credentials.errors';
 import { LoginCredentialsInvalidException } from './auth.errors';
+import { SessionsService } from '../sessions/sessions.service';
 
 /**
  * O AuthService é responsável por gerenciar a autenticação e o registro de usuários.
@@ -35,6 +36,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly credentialsService: CredentialsService,
     private readonly passwordService: PasswordService,
+    private readonly sessionsService: SessionsService,
   ) {}
 
   async register(dto: RegisterUserDto) {
@@ -59,7 +61,7 @@ export class AuthService {
     });
 
     this.logger.log(
-      `User registered with email=${dto.email} and userId=${userId.value}`,
+      `[register] User registered with email=${dto.email} and userId=${userId.value}`,
     );
 
     return createdUser;
@@ -69,13 +71,27 @@ export class AuthService {
     const emailVo = EmailAddressFactory.from(dto.email);
     const passwordVo = PasswordFactory.from(dto.password);
 
-    const userEnsured = await this.ensureUserCredentials(emailVo, passwordVo); // Ensure user exists and credentials are valid
+    const user = await this.ensureUserCredentials(emailVo, passwordVo); // Ensure user exists and credentials are valid
+
+    const { accessToken, refreshToken } = await this.generateSession(user);
 
     this.logger.log(
-      `User logged in with email=${emailVo.value} and userId=${userEnsured.id.value}`,
+      `[login] User logged in with email=${emailVo.value} and userId=${user.id.value}`,
     );
 
-    return;
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  private async generateSession(user: UserEntity) {
+    const session = await this.sessionsService.createSession(user);
+
+    return {
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
+    };
   }
 
   private async findUserByEmailOrThrow(
@@ -84,6 +100,9 @@ export class AuthService {
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
+      this.logger.warn(
+        `[findUserByEmailOrThrow] User not found for email=${email.value}`,
+      );
       throw new UserNotFoundException();
     }
 
@@ -96,13 +115,16 @@ export class AuthService {
     const credential = await this.credentialsService.findByUserId(userId);
 
     if (!credential) {
+      this.logger.warn(
+        `[findCredentialByUserIdOrThrow] Credential not found for userId=${userId.value}`,
+      );
       throw new CredentialNotFoundException();
     }
 
     return credential;
   }
 
-  private async validPassword(
+  private async validatePassword(
     credential: CredentialEntity,
     password: Password,
   ): Promise<boolean> {
@@ -112,6 +134,10 @@ export class AuthService {
     );
 
     if (!isValid) {
+      this.logger.warn(
+        `[validatePassword] Invalid password for userId=${credential.userId.value}`,
+      );
+
       throw new LoginCredentialsInvalidException();
     }
 
@@ -125,7 +151,11 @@ export class AuthService {
     const user = await this.findUserByEmailOrThrow(email);
     const credential = await this.findCredentialByUserIdOrThrow(user.id);
 
-    await this.validPassword(credential, password);
+    await this.validatePassword(credential, password);
+
+    this.logger.log(
+      `[ensureUserCredentials] User credentials validated for userId=${user.id.value}`,
+    );
 
     return user;
   }

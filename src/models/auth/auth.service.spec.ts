@@ -10,12 +10,14 @@ import { CredentialEntity } from '../credentials/domain/credential.entity';
 import { UUIDFactory } from 'src/common/entities/uuid/uuid.factory';
 import { EmailAddressFactory } from 'src/common/entities/email-address/email-address.factory';
 import { faker } from '@faker-js/faker/.';
+import { SessionsService } from '../sessions/sessions.service';
 
 describe(AuthService.name, () => {
   let authService: AuthService;
   let usersService: UsersService;
   let credentialsService: CredentialsService;
   let passwordService: PasswordService;
+  let sessionsService: SessionsService;
   let prisma: PrismaService;
 
   beforeEach(async () => {
@@ -49,6 +51,10 @@ describe(AuthService.name, () => {
             verifyPassword: jest.fn(),
           },
         },
+        {
+          provide: SessionsService,
+          useValue: {},
+        },
       ],
     }).compile();
 
@@ -56,6 +62,7 @@ describe(AuthService.name, () => {
     usersService = module.get<UsersService>(UsersService);
     credentialsService = module.get<CredentialsService>(CredentialsService);
     passwordService = module.get<PasswordService>(PasswordService);
+    sessionsService = module.get<SessionsService>(SessionsService);
     prisma = module.get<PrismaService>(PrismaService);
   });
 

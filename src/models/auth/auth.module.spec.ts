@@ -7,7 +7,7 @@ describe(AuthModule.name, () => {
     module = new AuthModule();
   });
 
-  it(`#${AuthModule.name} should be defined without errors when services loads`, async () => {
+  it('should be defined', () => {
     expect(module).toBeDefined();
   });
 });

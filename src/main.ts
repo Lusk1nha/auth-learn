@@ -25,6 +25,7 @@ export async function bootstrap(): Promise<void> {
   try {
     const app = await createApp(logger);
     await app.listen(port, '0.0.0.0');
+
     logger.log(`[bootstrap] Application started successfully on port ${port}`);
     logger.log(
       `[bootstrap] Application running on environment: ${environment}`,

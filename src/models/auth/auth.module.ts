@@ -5,6 +5,8 @@ import { CredentialsService } from '../credentials/credentials.service';
 import { PasswordService } from '../password/password.service';
 import { PrismaService } from 'src/common/database/database.service';
 import { AuthController } from './auth.controller';
+import { SessionsService } from '../sessions/sessions.service';
+import { HashService } from '../hash/hash.service';
 
 @Module({
   controllers: [AuthController],
@@ -14,6 +16,8 @@ import { AuthController } from './auth.controller';
     CredentialsService,
     PasswordService,
     PrismaService,
+    SessionsService,
+    HashService
   ],
 })
 export class AuthModule {}

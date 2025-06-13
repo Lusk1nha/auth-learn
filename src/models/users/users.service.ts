@@ -23,7 +23,7 @@ export class UsersService {
       return null;
     }
 
-    this.logger.log(`Found user with email=${email.value}`);
+    this.logger.log(`[findByEmail] Found user with email=${email.value}`);
     return UserMapper.toDomain(user);
   }
 
@@ -39,7 +39,9 @@ export class UsersService {
       throw new UserAlreadyExistsException();
     }
 
-    this.logger.log(`Creating user with email=${user.email.value}`);
+    this.logger.log(
+      `[createUser] Creating user with email=${user.email.value}`,
+    );
 
     const raw = await client.user.create({
       data: {
