@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/common/database/database.service';
 import { UUID } from 'src/common/entities/uuid/uuid.entity';
-import { UUIDFactory } from 'src/common/entities/uuid/uuid.factory';
+
 import { CredentialEntity } from './domain/credential.entity';
 import { CredentialMapper } from './domain/credential.mapper';
 import { CredentialAlreadyExistsForUserException } from './credentials.errors';

@@ -1,9 +1,16 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   InvalidPasswordException,
   WeakPasswordException,
 } from './password.errors';
 
 export class Password {
+  @ApiProperty({
+    description: 'The password value',
+    type: String,
+    example: 'StrongPassword123!',
+    required: true,
+  })
   private readonly _value: string;
 
   constructor(raw: string) {

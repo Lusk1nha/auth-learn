@@ -10,6 +10,7 @@ import { PrismaService } from '../common/database/database.service';
 import { CredentialsModule } from '../models/credentials/credentials.module';
 import { PasswordModule } from 'src/models/password/password.module';
 import { AuthModule } from 'src/models/auth/auth.module';
+import { SessionsModule } from 'src/models/sessions/sessions.module';
 
 const validationSchema = Joi.object({
   APP_PORT: Joi.number().integer().positive().default(3000),
@@ -29,6 +30,7 @@ const validationSchema = Joi.object({
     CredentialsModule,
     PasswordModule,
     AuthModule,
+    SessionsModule
   ],
   providers: [PrismaService],
 })

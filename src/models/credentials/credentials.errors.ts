@@ -14,3 +14,17 @@ export class CredentialAlreadyExistsForUserException extends BaseHttpException {
     );
   }
 }
+
+export class CredentialNotFoundException extends BaseHttpException {
+  constructor() {
+    super(
+      {
+        message: 'Credential not found.',
+        code: 'CREDENTIAL_NOT_FOUND',
+        status: HttpStatus.NOT_FOUND,
+      },
+      HttpStatus.NOT_FOUND,
+      'CREDENTIAL_NOT_FOUND',
+    );
+  }
+}

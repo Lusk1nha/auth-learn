@@ -1,10 +1,12 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dto/register-user.dto';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { LoginUserDto } from './dto/login-user.dto';
+import { RegisterUserResponseDto } from './dto/register-user-response.dto';
 
 @Controller('auth')
+@ApiTags('Auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -13,8 +15,15 @@ export class AuthController {
     summary: 'Register a new user',
     description: 'Endpoint to register a new user with email and password.',
   })
-  async register(@Body() data: RegisterUserDto) {
-    return this.authService.register(data);
+  @ApiOkResponse({
+    description: 'User registered successfully',
+    type: RegisterUserResponseDto,
+  })
+  async register(
+    @Body() data: RegisterUserDto,
+  ): Promise<RegisterUserResponseDto> {
+    const user = await this.authService.register(data);
+    return new RegisterUserResponseDto(user);
   }
 
   @Post('login')
