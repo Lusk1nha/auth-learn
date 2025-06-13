@@ -10,7 +10,7 @@ export function setupApp(
   logger: Logger,
   config?: IApplicationConfig,
 ): void {
-  logger.log('Setting up application...');
+  logger.log('[setupApp] Initializing application setup...');
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -29,5 +29,5 @@ export function setupApp(
   app.use(helmet());
   app.enableShutdownHooks();
 
-  logger.log('Application setup complete.');
+  logger.log('[setupApp] Application setup completed successfully.');
 }

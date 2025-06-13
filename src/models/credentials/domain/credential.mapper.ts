@@ -2,7 +2,7 @@ import { Prisma } from '@prisma/client';
 import { CredentialEntity } from './credential.entity';
 import { UUID } from 'src/common/entities/uuid/uuid.entity';
 
-type RawCredential = Prisma.CredentialGetPayload<{}>;
+export type RawCredential = Prisma.CredentialGetPayload<{}>;
 
 export class CredentialMapper {
   static toDomain(raw: RawCredential): CredentialEntity {

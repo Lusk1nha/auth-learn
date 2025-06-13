@@ -4,7 +4,7 @@ import { SwaggerModule } from '@nestjs/swagger';
 import Swagger from 'src/common/swagger/swagger.common';
 
 export function setupSwagger(app: INestApplication, logger: Logger): void {
-  logger.log('Setting up Swagger documentation...');
+  logger.log('[setupSwagger] Initializing Swagger documentation setup...');
 
   const swagger = new Swagger();
   const document = SwaggerModule.createDocument(app, swagger.config());
@@ -19,5 +19,7 @@ export function setupSwagger(app: INestApplication, logger: Logger): void {
     jsonDocumentUrl: 'api-docs/json',
   });
 
-  logger.log('Swagger documentation setup complete.');
+  logger.log(
+    '[setupSwagger] Swagger documentation setup completed successfully.',
+  );
 }

@@ -1,4 +1,4 @@
-import { EmailAddress } from "./email-address.entity";
+import { EmailAddress } from './email-address.entity';
 
 export class EmailAddressFactory {
   static from(value: string): EmailAddress {

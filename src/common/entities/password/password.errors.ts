@@ -7,11 +7,11 @@ export class InvalidPasswordException extends BaseHttpException {
       {
         message:
           'Invalid password format. Password must be a non-empty string.',
-        code: 'EMPTY_PASSWORD',
+        code: 'INVALID_PASSWORD',
         status: HttpStatus.BAD_REQUEST,
       },
       HttpStatus.BAD_REQUEST,
-      'EMPTY_PASSWORD',
+      'INVALID_PASSWORD',
     );
   }
 }

@@ -7,7 +7,7 @@ describe(Swagger.name, () => {
     swagger = new Swagger();
   });
 
-  it(`#${Swagger.name} should be defined`, () => {
+  it('should be defined', () => {
     expect(swagger).toBeDefined();
   });
 

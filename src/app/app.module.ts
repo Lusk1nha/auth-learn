@@ -30,7 +30,7 @@ const validationSchema = Joi.object({
     CredentialsModule,
     PasswordModule,
     AuthModule,
-    SessionsModule
+    SessionsModule,
   ],
   providers: [PrismaService],
 })

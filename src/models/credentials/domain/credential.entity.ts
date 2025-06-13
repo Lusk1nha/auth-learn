@@ -1,4 +1,5 @@
 import { UUID } from 'src/common/entities/uuid/uuid.entity';
+import { InvalidUuidException } from 'src/common/entities/uuid/uuid.errors';
 
 export class CredentialEntity {
   constructor(
@@ -7,7 +8,15 @@ export class CredentialEntity {
     public readonly passwordHash: string,
     public readonly createdAt?: Date,
     public readonly updatedAt?: Date,
-  ) {}
+  ) {
+    if (!(id instanceof UUID)) {
+      throw new InvalidUuidException();
+    }
+
+    if (!(userId instanceof UUID)) {
+      throw new InvalidUuidException();
+    }
+  }
 
   static createNew(
     id: UUID,

@@ -1,6 +1,9 @@
 import { faker } from '@faker-js/faker';
 import { User } from '@prisma/client';
-import { generateMock, generateSingleMock } from 'src/helpers/mockup/mockup.helper';
+import {
+  generateMock,
+  generateSingleMock,
+} from 'src/helpers/mockup/mockup.helper';
 
 export function generateMockUsers(
   count = 1,
