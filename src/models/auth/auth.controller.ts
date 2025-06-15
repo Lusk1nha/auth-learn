@@ -1,9 +1,10 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { LoginUserDto } from './dto/login-user.dto';
 import { RegisterUserResponseDto } from './dto/register-user-response.dto';
+import { LoginUserResponseDto } from './dto/login-user-response.dto';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -31,7 +32,19 @@ export class AuthController {
     summary: 'Login a user',
     description: 'Endpoint to login a user with email and password.',
   })
-  async login(@Body() data: LoginUserDto) {
-    return this.authService.login(data);
+  async login(
+    @Res({ passthrough: true }) response,
+    @Body() data: LoginUserDto,
+  ): Promise<LoginUserResponseDto> {
+    const { user, accessToken, refreshToken } =
+      await this.authService.login(data);
+
+    response.cookie('refreshToken', refreshToken.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
+    return new LoginUserResponseDto(user, accessToken);
   }
 }

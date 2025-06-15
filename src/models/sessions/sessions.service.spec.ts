@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SessionsService } from './sessions.service';
 import { HashService } from '../hash/hash.service';
+import { TokenService } from '../token/token.service';
 
 describe(SessionsService.name, () => {
   let service: SessionsService;
@@ -14,6 +15,12 @@ describe(SessionsService.name, () => {
           provide: HashService,
           useValue: {
             generateHmacHash: jest.fn(),
+          },
+        },
+        {
+          provide: TokenService,
+          useValue: {
+            generateToken: jest.fn(),
           },
         },
       ],

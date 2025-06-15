@@ -73,24 +73,17 @@ export class AuthService {
 
     const user = await this.ensureUserCredentials(emailVo, passwordVo); // Ensure user exists and credentials are valid
 
-    const { accessToken, refreshToken } = await this.generateSession(user);
+    const { accessToken, refreshToken } =
+      await this.sessionsService.createSession(user);
 
     this.logger.log(
       `[login] User logged in with email=${emailVo.value} and userId=${user.id.value}`,
     );
 
     return {
+      user,
       accessToken,
       refreshToken,
-    };
-  }
-
-  private async generateSession(user: UserEntity) {
-    const session = await this.sessionsService.createSession(user);
-
-    return {
-      accessToken: session.accessToken,
-      refreshToken: session.refreshToken,
     };
   }
 

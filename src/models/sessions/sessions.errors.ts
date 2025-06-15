@@ -14,3 +14,17 @@ export class SessionEnvironmentKeyNotFoundException extends BaseHttpException {
     );
   }
 }
+
+export class GeneratingSessionException extends BaseHttpException {
+  constructor() {
+    super(
+      {
+        message: 'Error generating session.',
+        code: 'GENERATING_SESSION_ERROR',
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+      },
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      'GENERATING_SESSION_ERROR',
+    );
+  }
+}

@@ -7,6 +7,7 @@ import { PrismaService } from 'src/common/database/database.service';
 import { AuthController } from './auth.controller';
 import { SessionsService } from '../sessions/sessions.service';
 import { HashService } from '../hash/hash.service';
+import { TokenService } from '../token/token.service';
 
 @Module({
   controllers: [AuthController],
@@ -17,7 +18,8 @@ import { HashService } from '../hash/hash.service';
     PasswordService,
     PrismaService,
     SessionsService,
-    HashService
+    HashService,
+    TokenService
   ],
 })
 export class AuthModule {}
