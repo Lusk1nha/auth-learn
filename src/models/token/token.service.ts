@@ -8,6 +8,7 @@ import {
 } from './__types__/token.types';
 import {
   GeneratingTokenException,
+  InvalidTokenException,
   InvalidTokenTypeException,
   TokenSecretMissingException,
 } from './token.errors';
@@ -34,6 +35,22 @@ export class TokenService {
     this.logger.log(`Generated ${type} token for user ${user.id.value}`);
 
     return TokenMapper.toDomain(raw);
+  }
+
+  async decodeToken(token: string, type: TokenType): Promise<UserJwtPayload> {
+    const { secret } = this.resolveConfig(type);
+
+    try {
+      return await this.jwtService.verifyAsync(token, {
+        secret,
+        algorithms: ['HS256'],
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to decode ${type} token: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      throw new InvalidTokenException();
+    }
   }
 
   private async signToken(

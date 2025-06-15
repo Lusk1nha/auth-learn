@@ -16,8 +16,13 @@ import { Password } from 'src/common/entities/password/password.entity';
 import { UserNotFoundException } from '../users/users.errors';
 import { UUID } from 'src/common/entities/uuid/uuid.entity';
 import { CredentialNotFoundException } from '../credentials/credentials.errors';
-import { LoginCredentialsInvalidException } from './auth.errors';
+import {
+  LoginCredentialsInvalidException,
+  NoRefreshTokenProvidedException,
+} from './auth.errors';
 import { SessionsService } from '../sessions/sessions.service';
+import { RevalidateSessionDto } from './dto/revalidate-session.dto';
+import { SessionTokens } from './__types__/auth.types';
 
 /**
  * O AuthService é responsável por gerenciar a autenticação e o registro de usuários.
@@ -67,7 +72,9 @@ export class AuthService {
     return createdUser;
   }
 
-  async login(dto: LoginUserDto) {
+  async login(
+    dto: LoginUserDto,
+  ): Promise<SessionTokens & { user: UserEntity }> {
     const emailVo = EmailAddressFactory.from(dto.email);
     const passwordVo = PasswordFactory.from(dto.password);
 
@@ -87,34 +94,40 @@ export class AuthService {
     };
   }
 
-  private async findUserByEmailOrThrow(
-    email: EmailAddress,
-  ): Promise<UserEntity> {
-    const user = await this.usersService.findByEmail(email);
+  async revalidateSession(dto: RevalidateSessionDto): Promise<SessionTokens> {
+    const { refreshToken } = dto;
 
-    if (!user) {
-      this.logger.warn(
-        `[findUserByEmailOrThrow] User not found for email=${email.value}`,
-      );
-      throw new UserNotFoundException();
+    if (!refreshToken) {
+      throw new NoRefreshTokenProvidedException();
     }
 
-    return user;
+    const user = await this.validateTokenOwnership(refreshToken);
+    const { accessToken, refreshToken: newRefreshToken } =
+      await this.sessionsService.revalidateSessionByRefreshToken(
+        user,
+        refreshToken,
+      );
+
+    this.logger.log(
+      `[revalidateSession] Session revalidated for userId=${user.id.value}`,
+    );
+
+    return {
+      accessToken,
+      refreshToken: newRefreshToken,
+    };
   }
 
-  private async findCredentialByUserIdOrThrow(
-    userId: UUID,
-  ): Promise<CredentialEntity> {
-    const credential = await this.credentialsService.findByUserId(userId);
+  private async validateTokenOwnership(token: string): Promise<UserEntity> {
+    const claims = await this.sessionsService.validateRefreshToken(token);
+    const user = await this.usersService.findByIdOrThrow(
+      UUIDFactory.from(claims.sub),
+    );
 
-    if (!credential) {
-      this.logger.warn(
-        `[findCredentialByUserIdOrThrow] Credential not found for userId=${userId.value}`,
-      );
-      throw new CredentialNotFoundException();
-    }
-
-    return credential;
+    this.logger.log(
+      `[validateTokenOwnership] Token ownership validated for userId=${user.id.value}`,
+    );
+    return user;
   }
 
   private async validatePassword(
@@ -141,8 +154,10 @@ export class AuthService {
     email: EmailAddress,
     password: Password,
   ): Promise<UserEntity> {
-    const user = await this.findUserByEmailOrThrow(email);
-    const credential = await this.findCredentialByUserIdOrThrow(user.id);
+    const user = await this.usersService.findByEmailOrThrow(email);
+    const credential = await this.credentialsService.findByUserIdOrThrow(
+      user.id,
+    );
 
     await this.validatePassword(credential, password);
 

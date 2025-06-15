@@ -131,12 +131,6 @@ describe(CredentialsService.name, () => {
       const userId = faker.string.uuid();
       const passwordHash = faker.string.alphanumeric(64);
 
-      const existingCredential = generateSingleMockCredential({
-        id: mockId,
-        userId,
-        passwordHash,
-      });
-
       const credentialEntity = CredentialEntity.createNew(
         UUIDFactory.from(mockId),
         UUIDFactory.from(userId),
@@ -144,8 +138,8 @@ describe(CredentialsService.name, () => {
       );
 
       jest
-        .spyOn(prismaService.credential, 'findUnique')
-        .mockResolvedValue(existingCredential);
+        .spyOn(prismaService.credential, 'create')
+        .mockRejectedValue(new CredentialAlreadyExistsForUserException());
 
       await expect(service.createCredential(credentialEntity)).rejects.toThrow(
         new CredentialAlreadyExistsForUserException(),

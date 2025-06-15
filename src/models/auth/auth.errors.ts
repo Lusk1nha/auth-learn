@@ -14,3 +14,17 @@ export class LoginCredentialsInvalidException extends BaseHttpException {
     );
   }
 }
+
+export class NoRefreshTokenProvidedException extends BaseHttpException {
+  constructor() {
+    super(
+      {
+        message: 'No refresh token provided.',
+        code: 'NO_REFRESH_TOKEN_PROVIDED',
+        status: HttpStatus.BAD_REQUEST,
+      },
+      HttpStatus.BAD_REQUEST,
+      'NO_REFRESH_TOKEN_PROVIDED',
+    );
+  }
+}

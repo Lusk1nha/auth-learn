@@ -4,8 +4,12 @@ import { UUID } from 'src/common/entities/uuid/uuid.entity';
 
 import { CredentialEntity } from './domain/credential.entity';
 import { CredentialMapper } from './domain/credential.mapper';
-import { CredentialAlreadyExistsForUserException } from './credentials.errors';
+import {
+  CredentialAlreadyExistsForUserException,
+  CredentialNotFoundException,
+} from './credentials.errors';
 import { PrismaTransaction } from 'src/common/database/__types__/database.types';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CredentialsService {
@@ -13,47 +17,86 @@ export class CredentialsService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async findByUserId(userId: UUID) {
-    const credential = await this.prisma.credential.findUnique({
-      where: { userId: userId.value },
-    });
-
-    if (!credential) {
-      return null;
-    }
-
-    this.logger.log(
-      `[findByUserId] Found credential for user ID=${userId.value}`,
-    );
-    return CredentialMapper.toDomain(credential);
+  /**
+   * Resolves the Prisma client or transaction.
+   */
+  private client(tx?: PrismaTransaction) {
+    return tx ?? this.prisma;
   }
 
+  /**
+   * Retrieves a credential by unique criteria, mapping to domain or returning null.
+   */
+  private async findUnique(
+    where: Prisma.CredentialWhereUniqueInput,
+  ): Promise<CredentialEntity | null> {
+    const record = await this.prisma.credential.findUnique({ where });
+    return record ? CredentialMapper.toDomain(record) : null;
+  }
+
+  /**
+   * Finds a credential by user ID, returning null if not found.
+   */
+  async findByUserId(userId: UUID): Promise<CredentialEntity | null> {
+    const credential = await this.findUnique({ userId: userId.value });
+
+    if (credential) {
+      this.logger.debug(`Credential found for userId=${userId.value}`);
+    }
+
+    return credential;
+  }
+
+  /**
+   * Finds a credential by user ID or throws NotFound exception.
+   */
+  async findByUserIdOrThrow(userId: UUID): Promise<CredentialEntity> {
+    const credential = await this.findByUserId(userId);
+
+    if (!credential) {
+      this.logger.warn(`No credential for userId=${userId.value}`);
+      throw new CredentialNotFoundException();
+    }
+
+    return credential;
+  }
+
+  /**
+   * Creates a credential for a user. Throws if one already exists.
+   */
   async createCredential(
     credential: CredentialEntity,
     tx?: PrismaTransaction,
   ): Promise<CredentialEntity> {
-    const client = tx ?? this.prisma;
-
-    const existingCredential = await this.findByUserId(credential.userId);
-
-    if (existingCredential) {
-      throw new CredentialAlreadyExistsForUserException();
-    }
-
+    const client = this.client(tx);
     this.logger.log(
-      `[createCredential] Creating credential for user ID=${credential.userId.value}`,
+      `Attempting to create credential for userId=${credential.userId.value}`,
     );
 
-    const raw = await client.credential.create({
-      data: {
-        id: credential.id.value,
-        user: {
-          connect: { id: credential.userId.value },
+    try {
+      const record = await client.credential.create({
+        data: {
+          id: credential.id.value,
+          user: { connect: { id: credential.userId.value } },
+          passwordHash: credential.passwordHash,
         },
-        passwordHash: credential.passwordHash,
-      },
-    });
+      });
+      this.logger.log(`Credential created with id=${record.id}`);
+      return CredentialMapper.toDomain(record);
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === 'P2002' &&
+        (err.meta?.target as string[]).includes('userId')
+      ) {
+        this.logger.error(
+          `Credential already exists for userId=${credential.userId.value}`,
+        );
+        throw new CredentialAlreadyExistsForUserException();
+      }
 
-    return CredentialMapper.toDomain(raw);
+      this.logger.error(`Error creating credential: ${err.message}`);
+      throw err;
+    }
   }
 }

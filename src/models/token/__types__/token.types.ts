@@ -10,4 +10,3 @@ export const TOKEN_CONFIG_KEYS = {
 } as const;
 
 export type TokenType = (typeof TOKEN_TYPES)[keyof typeof TOKEN_TYPES];
-

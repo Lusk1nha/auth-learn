@@ -28,3 +28,17 @@ export class GeneratingSessionException extends BaseHttpException {
     );
   }
 }
+
+export class InvalidSessionException extends BaseHttpException {
+  constructor() {
+    super(
+      {
+        message: 'Invalid session.',
+        code: 'INVALID_SESSION',
+        status: HttpStatus.UNAUTHORIZED,
+      },
+      HttpStatus.UNAUTHORIZED,
+      'INVALID_SESSION',
+    );
+  }
+}

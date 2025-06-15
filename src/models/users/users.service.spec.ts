@@ -119,16 +119,9 @@ describe(UsersService.name, () => {
         EmailAddressFactory.from(email),
       );
 
-      const existingUser: User = generateSingleMockUser({
-        id: mockId,
-        email,
-        image: null,
-        name: null,
-      });
-
       jest
-        .spyOn(prismaService.user, 'findUnique')
-        .mockResolvedValue(existingUser);
+        .spyOn(prismaService.user, 'create')
+        .mockRejectedValue(new UserAlreadyExistsException());
 
       await expect(service.createUser(userEntity)).rejects.toThrow(
         new UserAlreadyExistsException(),

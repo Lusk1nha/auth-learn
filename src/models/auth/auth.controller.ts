@@ -5,6 +5,9 @@ import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { LoginUserDto } from './dto/login-user.dto';
 import { RegisterUserResponseDto } from './dto/register-user-response.dto';
 import { LoginUserResponseDto } from './dto/login-user-response.dto';
+import { Cookies } from 'src/common/cookies/cookies.decorator';
+import { NoRefreshTokenProvidedException } from './auth.errors';
+import { RevalidateSessionResponseDto } from './dto/revalidate-session-response.dto';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -46,5 +49,24 @@ export class AuthController {
     });
 
     return new LoginUserResponseDto(user, accessToken);
+  }
+
+  @Post('revalidate')
+  async revalidate(
+    @Res({ passthrough: true }) response,
+    @Cookies('refreshToken') refreshToken: string,
+  ) {
+    const { accessToken, refreshToken: newRefreshToken } =
+      await this.authService.revalidateSession({
+        refreshToken,
+      });
+
+    response.cookie('refreshToken', newRefreshToken.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
+    return new RevalidateSessionResponseDto(accessToken);
   }
 }

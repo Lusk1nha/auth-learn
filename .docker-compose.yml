@@ -1,13 +1,12 @@
 services:
   redis:
+    container_name: auth-caching
     image: "redis:latest"
-    restart: always
-    env_file:
-      - .env
     ports:
-      - "${REDIS_PORT}:6379"
+      - "${REDIS_PORT}:${REDIS_PORT}"
     volumes:
-      - redis_data:/data
+      - redis:/data
 
 volumes:
-  redis_data:
+  redis:
+    driver: local

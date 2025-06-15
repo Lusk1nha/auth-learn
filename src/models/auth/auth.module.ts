@@ -8,6 +8,7 @@ import { AuthController } from './auth.controller';
 import { SessionsService } from '../sessions/sessions.service';
 import { HashService } from '../hash/hash.service';
 import { TokenService } from '../token/token.service';
+import { SessionsCacheService } from '../sessions-cache/sessions-cache.service';
 
 @Module({
   controllers: [AuthController],
@@ -18,8 +19,9 @@ import { TokenService } from '../token/token.service';
     PasswordService,
     PrismaService,
     SessionsService,
+    SessionsCacheService,
     HashService,
-    TokenService
+    TokenService,
   ],
 })
 export class AuthModule {}

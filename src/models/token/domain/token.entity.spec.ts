@@ -41,14 +41,18 @@ describe(TokenEntity.name, () => {
       const type = '' as TokenType;
       const token = 'valid-token';
 
-      expect(() => new TokenEntity(type, token)).toThrow(new InvalidTokenException());
+      expect(() => new TokenEntity(type, token)).toThrow(
+        new InvalidTokenException(),
+      );
     });
 
     it('should throw an error if token is empty', () => {
       const type: TokenType = 'access';
       const token = '' as string;
 
-      expect(() => new TokenEntity(type, token)).toThrow(new InvalidTokenException());
+      expect(() => new TokenEntity(type, token)).toThrow(
+        new InvalidTokenException(),
+      );
     });
   });
 });
