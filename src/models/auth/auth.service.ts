@@ -23,6 +23,7 @@ import {
 import { SessionsService } from '../sessions/sessions.service';
 import { RevalidateSessionDto } from './dto/revalidate-session.dto';
 import { SessionTokens } from './__types__/auth.types';
+import { LogoutUserDto } from './dto/logout-user.dto';
 
 /**
  * O AuthService é responsável por gerenciar a autenticação e o registro de usuários.
@@ -94,19 +95,27 @@ export class AuthService {
     };
   }
 
-  async revalidateSession(dto: RevalidateSessionDto): Promise<SessionTokens> {
+  async logout(dto: LogoutUserDto): Promise<void> {
     const { refreshToken } = dto;
 
     if (!refreshToken) {
       throw new NoRefreshTokenProvidedException();
     }
 
-    const user = await this.validateTokenOwnership(refreshToken);
+    const user = await this.validateUserOwnership(refreshToken);
+    await this.sessionsService.revokeByRefreshToken(user, refreshToken);
+  }
+
+  async revalidate(dto: RevalidateSessionDto): Promise<SessionTokens> {
+    const { refreshToken } = dto;
+
+    if (!refreshToken) {
+      throw new NoRefreshTokenProvidedException();
+    }
+
+    const user = await this.validateUserOwnership(refreshToken);
     const { accessToken, refreshToken: newRefreshToken } =
-      await this.sessionsService.revalidateSessionByRefreshToken(
-        user,
-        refreshToken,
-      );
+      await this.sessionsService.revalidateByRefreshToken(user, refreshToken);
 
     this.logger.log(
       `[revalidateSession] Session revalidated for userId=${user.id.value}`,
@@ -118,14 +127,14 @@ export class AuthService {
     };
   }
 
-  private async validateTokenOwnership(token: string): Promise<UserEntity> {
+  private async validateUserOwnership(token: string): Promise<UserEntity> {
     const claims = await this.sessionsService.validateRefreshToken(token);
     const user = await this.usersService.findByIdOrThrow(
       UUIDFactory.from(claims.sub),
     );
 
     this.logger.log(
-      `[validateTokenOwnership] Token ownership validated for userId=${user.id.value}`,
+      `[validateUserOwnership] Token ownership validated for userId=${user.id.value}`,
     );
     return user;
   }

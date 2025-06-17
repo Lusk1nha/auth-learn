@@ -24,15 +24,15 @@ export class SessionsService {
     return tokens;
   }
 
-  async revalidateSessionByRefreshToken(
+  async revalidateByRefreshToken(
     user: UserEntity,
     previousToken: string,
   ): Promise<SessionTokens> {
-    await this.validateTokenOwnership(user, previousToken);
+    await this.validateTokenExists(user, previousToken);
     const tokens = await this.generateTokens(user);
 
     await this.cacheService.saveSessionInCache(user, tokens.refreshToken);
-    await this.cacheService.deletePreviousSessionFromCache(previousToken);
+    await this.cacheService.deleteSessionFromCache(previousToken);
 
     return tokens;
   }
@@ -50,7 +50,14 @@ export class SessionsService {
     return payload;
   }
 
-  private async validateTokenOwnership(
+  async revokeByRefreshToken(user: UserEntity, refreshToken: string) {
+    await this.validateTokenExists(user, refreshToken);
+    await this.cacheService.deleteSessionFromCache(refreshToken);
+
+    this.logger.log(`Session invalidated for user ${user.id.value}`);
+  }
+
+  private async validateTokenExists(
     user: UserEntity,
     token: string,
   ): Promise<void> {
@@ -58,7 +65,7 @@ export class SessionsService {
 
     if (!cachedSession || cachedSession !== user.id.value) {
       this.logger.error(
-        `Token ownership validation failed for user ${user.id.value}`,
+        `[validateTokenExists] Token ownership validation failed for user ${user.id.value}`,
       );
       throw new InvalidSessionException();
     }

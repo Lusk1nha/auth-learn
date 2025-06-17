@@ -110,9 +110,9 @@ describe(SessionsCacheService.name, () => {
     });
   });
 
-  describe('deletePreviousSessionFromCache', () => {
+  describe('deleteSessionFromCache', () => {
     it('should be defined', () => {
-      expect(service.deletePreviousSessionFromCache).toBeDefined();
+      expect(service.deleteSessionFromCache).toBeDefined();
     });
 
     it('should delete previous session from cache', async () => {
@@ -123,7 +123,7 @@ describe(SessionsCacheService.name, () => {
       jest.spyOn(cacheService, 'del').mockResolvedValue(true);
 
       const result =
-        await service.deletePreviousSessionFromCache(previousToken);
+        await service.deleteSessionFromCache(previousToken);
 
       const cacheKey = `${REDIS_KEYS.REFRESH_TOKEN_PREFIX}${hashedPreviousToken}`;
 

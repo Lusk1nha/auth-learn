@@ -31,7 +31,9 @@ export class TokenService {
     const { secret, expiresIn } = this.resolveConfig(type);
 
     const raw = await this.signToken(type, payload, secret, expiresIn);
-    this.logger.log(`Generated ${type} token for user ${user.id.value}`);
+    this.logger.log(
+      `[generateToken] Generated ${type} token for user ${user.id.value}`,
+    );
 
     return TokenMapper.toDomain(raw);
   }
@@ -46,7 +48,7 @@ export class TokenService {
       });
     } catch (error) {
       this.logger.error(
-        `Failed to decode ${type} token: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `[decodeToken] Failed to decode ${type} token: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
       throw new InvalidTokenException();
     }
@@ -98,6 +100,9 @@ export class TokenService {
     const secret = this.configService.get<string>(key);
 
     if (!secret) {
+      this.logger.error(
+        `[resolveConfig] Missing secret for token type: ${type}`,
+      );
       throw new TokenSecretMissingException(key);
     }
 

@@ -6,8 +6,9 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { RegisterUserResponseDto } from './dto/register-user-response.dto';
 import { LoginUserResponseDto } from './dto/login-user-response.dto';
 import { Cookies } from 'src/common/cookies/cookies.decorator';
-import { NoRefreshTokenProvidedException } from './auth.errors';
+
 import { RevalidateSessionResponseDto } from './dto/revalidate-session-response.dto';
+import { LogoutUserResponseDto } from './dto/logout-user-response.dto';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -52,12 +53,17 @@ export class AuthController {
   }
 
   @Post('revalidate')
+  @ApiOperation({
+    summary: 'Revalidate user session',
+    description:
+      'Endpoint to revalidate user session using the refresh token stored in cookies.',
+  })
   async revalidate(
     @Res({ passthrough: true }) response,
     @Cookies('refreshToken') refreshToken: string,
-  ) {
+  ): Promise<RevalidateSessionResponseDto> {
     const { accessToken, refreshToken: newRefreshToken } =
-      await this.authService.revalidateSession({
+      await this.authService.revalidate({
         refreshToken,
       });
 
@@ -68,5 +74,25 @@ export class AuthController {
     });
 
     return new RevalidateSessionResponseDto(accessToken);
+  }
+
+  @Post('logout')
+  @ApiOperation({
+    summary: 'Logout a user',
+    description: 'Endpoint to logout a user and clear the refresh token.',
+  })
+  async logout(
+    @Res({ passthrough: true }) response,
+    @Cookies('refreshToken') refreshToken: string,
+  ): Promise<LogoutUserResponseDto> {
+    await this.authService.logout({ refreshToken });
+
+    response.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
+    return { message: 'Logged out successfully' };
   }
 }

@@ -54,7 +54,7 @@ export class SessionsCacheService {
     return result;
   }
 
-  async deletePreviousSessionFromCache(previousToken: string) {
+  async deleteSessionFromCache(previousToken: string) {
     const tokenHash = this.hashService.generate(previousToken);
     const cacheKey = `${REDIS_KEYS.REFRESH_TOKEN_PREFIX}${tokenHash}`;
 

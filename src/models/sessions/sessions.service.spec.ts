@@ -45,7 +45,7 @@ describe(SessionsService.name, () => {
           useValue: {
             getSessionFromCache: jest.fn(),
             saveSessionInCache: jest.fn(),
-            deletePreviousSessionFromCache: jest.fn(),
+            deleteSessionFromCache: jest.fn(),
           },
         },
       ],
@@ -100,7 +100,7 @@ describe(SessionsService.name, () => {
 
   describe('revalidateSessionByRefreshToken', () => {
     it('should be defined', () => {
-      expect(service.revalidateSessionByRefreshToken).toBeDefined();
+      expect(service.revalidateByRefreshToken).toBeDefined();
     });
 
     it('should revalidate session and update cache', async () => {
@@ -122,7 +122,7 @@ describe(SessionsService.name, () => {
 
       jest.spyOn(cacheService, 'saveSessionInCache').mockResolvedValue('OK');
       jest
-        .spyOn(cacheService, 'deletePreviousSessionFromCache')
+        .spyOn(cacheService, 'deleteSessionFromCache')
         .mockResolvedValue(true);
 
       jest
@@ -130,7 +130,7 @@ describe(SessionsService.name, () => {
         .mockResolvedValueOnce(newAccessToken)
         .mockResolvedValueOnce(newRefreshToken);
 
-      const result = await service.revalidateSessionByRefreshToken(
+      const result = await service.revalidateByRefreshToken(
         user,
         previousToken,
       );
@@ -142,7 +142,7 @@ describe(SessionsService.name, () => {
         user,
         newRefreshToken,
       );
-      expect(cacheService.deletePreviousSessionFromCache).toHaveBeenCalledWith(
+      expect(cacheService.deleteSessionFromCache).toHaveBeenCalledWith(
         previousToken,
       );
     });
@@ -190,6 +190,35 @@ describe(SessionsService.name, () => {
       expect(tokenService.decodeToken).toHaveBeenCalledWith(
         invalidRefreshToken,
         TOKEN_TYPES.REFRESH,
+      );
+    });
+  });
+
+  describe('revokeByRefreshToken', () => {
+    it('should be defined', () => {
+      expect(service.revokeByRefreshToken).toBeDefined();
+    });
+
+    it('should revoke session by refresh token and delete from cache', async () => {
+      const user = UserMapper.toDomain(generateSingleMockUser());
+      const refreshToken = 'valid-refresh-token';
+
+      jest
+        .spyOn(cacheService, 'getSessionFromCache')
+        .mockResolvedValue(user.id.value);
+
+      jest
+        .spyOn(cacheService, 'deleteSessionFromCache')
+        .mockResolvedValue(true);
+
+      const result = await service.revokeByRefreshToken(user, refreshToken);
+
+      expect(result).toBeUndefined();
+      expect(cacheService.deleteSessionFromCache).toHaveBeenCalledWith(
+        refreshToken,
+      );
+      expect(cacheService.getSessionFromCache).toHaveBeenCalledWith(
+        refreshToken,
       );
     });
   });
