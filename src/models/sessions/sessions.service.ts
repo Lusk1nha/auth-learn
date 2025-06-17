@@ -7,7 +7,6 @@ import { SessionTokens } from '../auth/__types__/auth.types';
 import { UserJwtPayload } from 'src/common/auth/__types__/auth.types';
 import { InvalidSessionException } from './sessions.errors';
 import { SessionsCacheService } from '../sessions-cache/sessions-cache.service';
-import { TokenEntity } from '../token/domain/token.entity';
 
 @Injectable()
 export class SessionsService {
@@ -51,7 +50,10 @@ export class SessionsService {
     return payload;
   }
 
-  private async validateTokenOwnership(user: UserEntity, token: string) {
+  private async validateTokenOwnership(
+    user: UserEntity,
+    token: string,
+  ): Promise<void> {
     const cachedSession = await this.cacheService.getSessionFromCache(token);
 
     if (!cachedSession || cachedSession !== user.id.value) {

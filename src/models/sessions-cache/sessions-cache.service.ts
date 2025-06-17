@@ -6,6 +6,8 @@ import { REDIS_KEYS } from '../sessions/__types__/sessions.types';
 import { UserEntity } from '../users/domain/user.entity';
 import { TokenEntity } from '../token/domain/token.entity';
 
+export const EXPIRATION_TTL = 7 * 24 * 60 * 60; // 7 days in seconds
+
 @Injectable()
 export class SessionsCacheService {
   private readonly logger = new Logger(SessionsCacheService.name);
@@ -15,7 +17,7 @@ export class SessionsCacheService {
     private readonly hashService: HashService,
   ) {}
 
-  async getSessionFromCache(refreshToken: string) {
+  async getSessionFromCache(refreshToken: string): Promise<string | null> {
     const tokenHash = this.hashService.generate(refreshToken);
     const cacheKey = `${REDIS_KEYS.REFRESH_TOKEN_PREFIX}${tokenHash}`;
 
@@ -36,13 +38,13 @@ export class SessionsCacheService {
     const tokenHash = this.hashService.generate(refreshToken.token);
 
     const cacheKey = `${REDIS_KEYS.REFRESH_TOKEN_PREFIX}${tokenHash}`;
-    const expirationTtl = 7 * 24 * 60 * 60; // 7 days in seconds
+
     const cacheValue = user.id.value;
 
     const result = await this.cacheService.set(
       cacheKey,
       cacheValue,
-      expirationTtl,
+      EXPIRATION_TTL,
     );
 
     this.logger.log(

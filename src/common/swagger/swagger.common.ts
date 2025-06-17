@@ -1,7 +1,7 @@
 import { DocumentBuilder } from '@nestjs/swagger';
 
 export default class Swagger {
-  public readonly tag = 'api/v1';
+  public readonly tag = 'api-docs';
 
   public config() {
     return new DocumentBuilder()

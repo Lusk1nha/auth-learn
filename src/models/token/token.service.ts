@@ -9,7 +9,6 @@ import {
 import {
   GeneratingTokenException,
   InvalidTokenException,
-  InvalidTokenTypeException,
   TokenSecretMissingException,
 } from './token.errors';
 
@@ -31,7 +30,7 @@ export class TokenService {
     const payload = this.createPayload(user);
     const { secret, expiresIn } = this.resolveConfig(type);
 
-    const raw = await this.signToken(payload, secret, expiresIn);
+    const raw = await this.signToken(type, payload, secret, expiresIn);
     this.logger.log(`Generated ${type} token for user ${user.id.value}`);
 
     return TokenMapper.toDomain(raw);
@@ -54,6 +53,7 @@ export class TokenService {
   }
 
   private async signToken(
+    type: TokenType,
     payload: UserJwtPayload,
     secret: string,
     expiresIn: string,
@@ -66,10 +66,7 @@ export class TokenService {
       });
 
       return {
-        tokenType:
-          payload.sub === TOKEN_TYPES.REFRESH
-            ? TOKEN_TYPES.REFRESH
-            : TOKEN_TYPES.ACCESS,
+        tokenType: type,
         token,
         expiresIn,
       };

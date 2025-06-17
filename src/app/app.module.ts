@@ -16,6 +16,8 @@ import { TokenModule } from 'src/models/token/token.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-store';
 import { SessionsCacheModule } from 'src/models/sessions-cache/sessions-cache.module';
+import { AppService } from './app.service';
+import { AppController } from './app.controller';
 
 const validationSchema = Joi.object({
   APP_PORT: Joi.number().integer().positive().default(3000),
@@ -46,6 +48,7 @@ const validationSchema = Joi.object({
     HashModule,
     TokenModule,
   ],
-  providers: [PrismaService],
+  controllers: [AppController],
+  providers: [AppService, PrismaService],
 })
 export class AppModule {}

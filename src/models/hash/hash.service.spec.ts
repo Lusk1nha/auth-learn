@@ -37,7 +37,7 @@ describe(HashService.name, () => {
     expect(hashService).toBeDefined();
   });
 
-  describe('generateHmac', () => {
+  describe('generate', () => {
     it('should generate a valid HMAC', () => {
       const text = 'test';
       const hmac = hashService.generate(text);
