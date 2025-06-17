@@ -8,7 +8,7 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get('/')
-  getIndex() {
-    return this.appService.getIndex();
+  async getIndex() {
+    return await this.appService.getIndex();
   }
 }

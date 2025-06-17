@@ -20,6 +20,12 @@ export class GetIndexResponseDto {
   version: string;
 
   @ApiProperty({
+    description: 'The authors of the application',
+    example: ['Lucas Pedro da Hora <lucaspedro517@gmail.com>'],
+  })
+  authors: string[];
+
+  @ApiProperty({
     description: 'The environment in which the application is running',
     example: 'development',
   })
