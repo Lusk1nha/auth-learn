@@ -45,6 +45,10 @@ export class AuthController {
     summary: 'Login a user',
     description: 'Endpoint to login a user with email and password.',
   })
+  @ApiOkResponse({
+    description: 'User logged in successfully',
+    type: LoginUserResponseDto,
+  })
   async login(
     @Res({ passthrough: true }) response,
     @Body() data: LoginUserDto,
@@ -67,6 +71,10 @@ export class AuthController {
     summary: 'Revalidate user session',
     description:
       'Endpoint to revalidate user session using the refresh token stored in cookies.',
+  })
+  @ApiOkResponse({
+    description: 'Session revalidated successfully',
+    type: RevalidateSessionResponseDto,
   })
   async revalidate(
     @Res({ passthrough: true }) response,
@@ -91,6 +99,10 @@ export class AuthController {
   @ApiOperation({
     summary: 'Logout a user',
     description: 'Endpoint to logout a user and clear the refresh token.',
+  })
+  @ApiOkResponse({
+    description: 'User logged out successfully',
+    type: LogoutUserResponseDto,
   })
   async logout(
     @Res({ passthrough: true }) response,

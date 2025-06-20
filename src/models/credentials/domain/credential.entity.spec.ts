@@ -55,8 +55,8 @@ describe(CredentialEntity.name, () => {
   });
 
   describe('createNew method', () => {
-    it(`should be defined ${CredentialEntity.createNew.name}`, () => {
-      expect(CredentialEntity.createNew).toBeDefined();
+    it(`should be defined ${CredentialEntity.create.name}`, () => {
+      expect(CredentialEntity.create).toBeDefined();
     });
 
     it('should create a new credential with valid data', () => {
@@ -64,7 +64,7 @@ describe(CredentialEntity.name, () => {
       const userId = faker.string.uuid();
       const passwordHash = faker.string.alphanumeric(64);
 
-      const credential = CredentialEntity.createNew(
+      const credential = CredentialEntity.create(
         UUIDFactory.from(id),
         UUIDFactory.from(userId),
         passwordHash,

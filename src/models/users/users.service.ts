@@ -11,6 +11,8 @@ import { UserEntity } from './domain/user.entity';
 import { UserMapper } from './domain/user.mapper';
 import { PrismaTransaction } from 'src/common/database/__types__/database.types';
 import { Prisma } from '@prisma/client';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { EmailAddressFactory } from 'src/common/entities/email-address/email-address.factory';
 
 @Injectable()
 export class UsersService {
@@ -26,6 +28,27 @@ export class UsersService {
   ): Promise<UserEntity | null> {
     const record = await this.prisma.user.findUnique({ where });
     return record ? UserMapper.toDomain(record) : null;
+  }
+
+  /**
+   * Updates a user by unique criteria, mapping to domain or returning null.
+   */
+  private async updateUnique(
+    user: UserEntity,
+    tx?: PrismaTransaction,
+  ): Promise<UserEntity> {
+    const client = this.client(tx);
+
+    const record = await client.user.update({
+      where: { id: user.id.value },
+      data: {
+        email: user.email.value,
+        name: user.name,
+        image: user.image,
+      },
+    });
+
+    return UserMapper.toDomain(record);
   }
 
   /**
@@ -117,5 +140,25 @@ export class UsersService {
       this.logger.error(`Error creating user: ${err.message}`);
       throw err;
     }
+  }
+
+  async updateUser(id: UUID, dto: UpdateUserDto): Promise<UserEntity> {
+    this.logger.log(`Attempting to update user id=${id.value}`);
+
+    return await this.prisma.$transaction(async (tx) => {
+      const original = await this.findByIdOrThrow(id);
+
+      const emailVo = dto.email
+        ? EmailAddressFactory.from(dto.email)
+        : undefined;
+
+      const patched = UserEntity.patch(original, {
+        email: emailVo,
+        name: dto.name,
+        image: dto.image,
+      });
+
+      return this.updateUnique(patched, tx);
+    });
   }
 }

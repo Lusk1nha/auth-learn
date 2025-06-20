@@ -1,15 +1,16 @@
 import { Prisma } from '@prisma/client';
 import { UserEntity } from './user.entity';
-import { UUID } from 'src/common/entities/uuid/uuid.entity';
-import { EmailAddress } from 'src/common/entities/email-address/email-address.entity';
+
+import { UUIDFactory } from 'src/common/entities/uuid/uuid.factory';
+import { EmailAddressFactory } from 'src/common/entities/email-address/email-address.factory';
 
 export type RawUser = Prisma.UserGetPayload<{}>;
 
 export class UserMapper {
   static toDomain(raw: RawUser): UserEntity {
     return new UserEntity(
-      new UUID(raw.id),
-      new EmailAddress(raw.email),
+      UUIDFactory.from(raw.id),
+      EmailAddressFactory.from(raw.email),
       raw.name ?? undefined,
       raw.image ?? undefined,
       raw.createdAt,

@@ -45,7 +45,7 @@ describe(UserMapper.name, () => {
       const id = faker.string.uuid();
       const email = faker.internet.email();
 
-      const userEntity = UserEntity.createNew(
+      const userEntity = UserEntity.create(
         UUIDFactory.from(id),
         EmailAddressFactory.from(email),
         faker.person.firstName(),

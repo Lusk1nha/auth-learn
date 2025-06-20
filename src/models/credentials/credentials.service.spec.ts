@@ -99,7 +99,7 @@ describe(CredentialsService.name, () => {
         passwordHash,
       });
 
-      const credentialEntity = CredentialEntity.createNew(
+      const credentialEntity = CredentialEntity.create(
         UUIDFactory.from(mockId),
         UUIDFactory.from(userId),
         passwordHash,
@@ -131,7 +131,7 @@ describe(CredentialsService.name, () => {
       const userId = faker.string.uuid();
       const passwordHash = faker.string.alphanumeric(64);
 
-      const credentialEntity = CredentialEntity.createNew(
+      const credentialEntity = CredentialEntity.create(
         UUIDFactory.from(mockId),
         UUIDFactory.from(userId),
         passwordHash,

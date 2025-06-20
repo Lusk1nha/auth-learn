@@ -52,8 +52,8 @@ export class AuthService {
     const passwordVo = PasswordFactory.from(dto.password);
     const passwordHash = await this.passwordService.hashPassword(passwordVo);
 
-    const userEntity = UserEntity.createNew(userId, emailVo);
-    const credEntity = CredentialEntity.createNew(
+    const userEntity = UserEntity.create(userId, emailVo);
+    const credEntity = CredentialEntity.create(
       UUIDFactory.create(),
       userId,
       passwordHash,

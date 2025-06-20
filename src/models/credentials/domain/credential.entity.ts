@@ -18,7 +18,7 @@ export class CredentialEntity {
     }
   }
 
-  static createNew(
+  static create(
     id: UUID,
     userId: UUID,
     passwordHash: string,

@@ -1,9 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
+
 import { EmailAddress } from 'src/common/entities/email-address/email-address.entity';
 import { InvalidEmailAddressException } from 'src/common/entities/email-address/email-address.errors';
 import { UUID } from 'src/common/entities/uuid/uuid.entity';
 import { InvalidUuidException } from 'src/common/entities/uuid/uuid.errors';
 
+export interface UserPatch {
+  email?: EmailAddress;
+  name?: string;
+  image?: string;
+}
 export class UserEntity {
   constructor(
     id: UUID,
@@ -14,7 +20,7 @@ export class UserEntity {
     updatedAt?: Date,
   ) {
     if (!(id instanceof UUID)) {
-      throw new InvalidUuidException();
+      throw new InvalidUuidException('Invalid user ID format.');
     }
 
     if (!(email instanceof EmailAddress)) {
@@ -75,12 +81,23 @@ export class UserEntity {
   })
   public readonly updatedAt?: Date;
 
-  static createNew(
+  static create(
     id: UUID,
     email: EmailAddress,
     name?: string,
     image?: string,
   ): UserEntity {
     return new UserEntity(id, email, name, image);
+  }
+
+  public static patch(original: UserEntity, patch: UserPatch): UserEntity {
+    return new UserEntity(
+      original.id,
+      patch.email ?? original.email,
+      patch.name ?? original.name,
+      patch.image ?? original.image,
+      original.createdAt,
+      new Date(),
+    );
   }
 }

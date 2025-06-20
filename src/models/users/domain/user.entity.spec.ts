@@ -39,7 +39,7 @@ describe(UserEntity.name, () => {
       const id = UUIDFactory.create();
       const email = faker.internet.email();
 
-      const user = UserEntity.createNew(id, EmailAddressFactory.from(email));
+      const user = UserEntity.create(id, EmailAddressFactory.from(email));
       expect(user).toBeInstanceOf(UserEntity);
       expect(user.id).toEqual(id);
       expect(user.email.value).toEqual(email);
@@ -71,15 +71,15 @@ describe(UserEntity.name, () => {
   });
 
   describe('createNew method', () => {
-    it(`should be defined ${UserEntity.createNew.name}`, () => {
-      expect(UserEntity.createNew).toBeDefined();
+    it(`should be defined ${UserEntity.create.name}`, () => {
+      expect(UserEntity.create).toBeDefined();
     });
 
     it('should create a new user with valid data', () => {
       const id = faker.string.uuid();
       const email = faker.internet.email();
 
-      const user = UserEntity.createNew(
+      const user = UserEntity.create(
         UUIDFactory.from(id),
         EmailAddressFactory.from(email),
       );

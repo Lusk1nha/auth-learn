@@ -18,8 +18,9 @@ import { redisStore } from 'cache-manager-redis-store';
 import { SessionsCacheModule } from 'src/models/sessions-cache/sessions-cache.module';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
-import { HealthModule } from 'src/health/health.module';
+import { HealthModule } from 'src/models/health/health.module';
 import { MemoryUsageModule } from 'src/models/memory-usage/memory-usage.module';
+import { AdminModule } from 'src/models/admin/admin.module';
 
 const validationSchema = Joi.object({
   APP_PORT: Joi.number().integer().positive().default(3000),
@@ -51,6 +52,7 @@ const validationSchema = Joi.object({
     SessionsCacheModule,
     HashModule,
     TokenModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

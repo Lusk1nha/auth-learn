@@ -10,7 +10,10 @@ import { generateSingleMockUser } from './__mock__/users.mock';
 
 import { UserEntity } from './domain/user.entity';
 import { UserMapper } from './domain/user.mapper';
-import { UserAlreadyExistsException } from './users.errors';
+import {
+  UserAlreadyExistsException,
+  UserNotFoundException,
+} from './users.errors';
 
 describe(UsersService.name, () => {
   let service: UsersService;
@@ -75,6 +78,53 @@ describe(UsersService.name, () => {
     });
   });
 
+  describe('Find user by ID', () => {
+    it(`should be defined ${UsersService.prototype.findById.name}`, () => {
+      expect(service.findById).toBeDefined();
+    });
+
+    it('should return a user if found by ID', async () => {
+      const raw = generateSingleMockUser();
+
+      jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(raw);
+      const result = await service.findById(UUIDFactory.from(raw.id));
+
+      expect(result).toEqual(UserMapper.toDomain(raw));
+      expect(prismaService.user.findUnique).toHaveBeenCalledWith({
+        where: { id: raw.id },
+      });
+      expect(result).toBeInstanceOf(UserEntity);
+    });
+  });
+
+  describe('Find user by ID or throw error', () => {
+    it(`should be defined ${UsersService.prototype.findByIdOrThrow.name}`, () => {
+      expect(service.findByIdOrThrow).toBeDefined();
+    });
+
+    it('should return a user if found by ID', async () => {
+      const raw = generateSingleMockUser();
+
+      jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(raw);
+      const result = await service.findByIdOrThrow(UUIDFactory.from(raw.id));
+
+      expect(result).toEqual(UserMapper.toDomain(raw));
+      expect(result).toBeInstanceOf(UserEntity);
+      expect(prismaService.user.findUnique).toHaveBeenCalledWith({
+        where: { id: raw.id },
+      });
+    });
+
+    it('should throw UserNotFoundException if no user found', async () => {
+      const mockId = faker.string.uuid();
+      jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(null);
+
+      await expect(
+        service.findByIdOrThrow(UUIDFactory.from(mockId)),
+      ).rejects.toThrow(new UserNotFoundException());
+    });
+  });
+
   describe('Create new user', () => {
     it(`should be defined ${UsersService.prototype.createUser.name}`, () => {
       expect(service.createUser).toBeDefined();
@@ -84,7 +134,7 @@ describe(UsersService.name, () => {
       const mockId = faker.string.uuid();
       const email = faker.internet.email();
 
-      const userEntity = UserEntity.createNew(
+      const userEntity = UserEntity.create(
         UUIDFactory.from(mockId),
         EmailAddressFactory.from(email),
       );
@@ -114,7 +164,7 @@ describe(UsersService.name, () => {
       const mockId = faker.string.uuid();
       const email = faker.internet.email();
 
-      const userEntity = UserEntity.createNew(
+      const userEntity = UserEntity.create(
         UUIDFactory.from(mockId),
         EmailAddressFactory.from(email),
       );

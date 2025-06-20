@@ -1,7 +1,7 @@
 import * as request from 'supertest';
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { AppModule } from 'src/app/app.module';
 import { ConfigService } from '@nestjs/config';
 
@@ -53,7 +53,7 @@ describe('AppController (e2e)', () => {
 
     await request(app.getHttpServer())
       .get('/')
-      .expect(200)
+      .expect(HttpStatus.OK)
       .expect((res) => expect(res.body).toEqual(expected));
   });
 });

@@ -13,7 +13,7 @@ import { SessionTokens } from './__types__/auth.types';
 import { TokenMapper } from '../token/domain/token.mapper';
 import { generateSingleMockToken } from '../token/__mock__/token.mock';
 import { LoginUserDto } from './dto/login-user.dto';
-import { ResponseDecoratorOptions } from '@nestjs/common';
+
 import { LoginUserResponseDto } from './dto/login-user-response.dto';
 
 describe(AuthController.name, () => {
@@ -49,7 +49,7 @@ describe(AuthController.name, () => {
     });
 
     it(`should call ${AuthService.prototype.register.name} when route is called with correct data`, async () => {
-      const mockUserEntity = UserEntity.createNew(
+      const mockUserEntity = UserEntity.create(
         UUIDFactory.create(),
         EmailAddressFactory.from(faker.internet.email()),
       );
@@ -102,7 +102,6 @@ describe(AuthController.name, () => {
       });
 
       const result = await controller.login({ cookie: () => {} }, dto);
-      
 
       expect(result).toBeDefined();
       expect(result).toBeInstanceOf(LoginUserResponseDto);

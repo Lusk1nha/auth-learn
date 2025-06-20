@@ -119,12 +119,12 @@ describe(AuthService.name, () => {
       const mockUserId = UUIDFactory.create();
       const mockCredId = UUIDFactory.create();
 
-      const mockUserEntity = UserEntity.createNew(
+      const mockUserEntity = UserEntity.create(
         mockUserId,
         EmailAddressFactory.from(dto.email),
       );
 
-      const mockCredentialEntity = CredentialEntity.createNew(
+      const mockCredentialEntity = CredentialEntity.create(
         mockCredId,
         mockUserId,
         'hashed-password',

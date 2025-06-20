@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from 'src/app/app.module';
 
@@ -23,14 +23,14 @@ describe('HealthController (e2e)', () => {
     it('GET /health/ready returns 200 OK', async () => {
       await request(app.getHttpServer())
         .get('/health/ready')
-        .expect(200)
+        .expect(HttpStatus.OK)
         .expect((res) => expect(res.body).toBeDefined());
     });
 
     it('GET /health/live returns 200 OK', async () => {
       await request(app.getHttpServer())
         .get('/health/live')
-        .expect(200)
+        .expect(HttpStatus.OK)
         .expect((res) => expect(res.body).toBeDefined());
     });
   });
