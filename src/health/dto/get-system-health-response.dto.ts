@@ -1,12 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { HealthEntity } from '../domain/health.entity';
+import { HealthStatus } from '../__types__/health.types';
 
 export class GetSystemHealthResponseDto {
   @ApiProperty({
-    enum: ['healthy', 'degraded', 'unhealthy'],
+    enum: [HealthStatus.HEALTHY, HealthStatus.DEGRADED, HealthStatus.UNHEALTHY],
     description: 'Service status',
   })
-  status: 'healthy' | 'degraded' | 'unhealthy';
+  status: HealthStatus;
 
   @ApiProperty({
     description: 'Service name',

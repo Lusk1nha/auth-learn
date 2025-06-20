@@ -11,7 +11,7 @@ export class HealthEntity {
   @ApiProperty({
     description: 'Check status for the service',
     enum: [HealthStatus.HEALTHY, HealthStatus.DEGRADED, HealthStatus.UNHEALTHY],
-    example: 'healthy',
+    example: HealthStatus.HEALTHY,
   })
   status: HealthStatus;
 

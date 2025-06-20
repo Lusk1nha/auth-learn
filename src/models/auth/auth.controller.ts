@@ -1,4 +1,11 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Res,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -16,6 +23,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Register a new user',
     description: 'Endpoint to register a new user with email and password.',
@@ -32,6 +40,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Login a user',
     description: 'Endpoint to login a user with email and password.',
@@ -53,6 +62,7 @@ export class AuthController {
   }
 
   @Post('revalidate')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Revalidate user session',
     description:
@@ -77,6 +87,7 @@ export class AuthController {
   }
 
   @Post('logout')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Logout a user',
     description: 'Endpoint to logout a user and clear the refresh token.',

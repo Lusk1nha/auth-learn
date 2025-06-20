@@ -4,7 +4,7 @@ import { PrismaService } from 'src/common/database/database.service';
 import { GetSystemHealthResponseDto } from './dto/get-system-health-response.dto';
 import { MemoryUsageService } from 'src/models/memory-usage/memory-usage.service';
 import { HealthCannotSetEnvironmentVariableException } from './health.errors';
-import { HealthEntity } from './domain/health.entity';
+
 import { HealthStatus } from './__types__/health.types';
 import { HealthMapper } from './domain/health.mapper';
 
@@ -48,7 +48,7 @@ export class HealthService {
     return {
       service,
       version,
-      status: dbHealthy ? 'healthy' : 'degraded',
+      status: dbHealthy ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY,
       checks: details,
       uptime: process.uptime(),
       timestamp: new Date().toISOString(),
