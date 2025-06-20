@@ -5,6 +5,8 @@ import { GetSystemHealthResponseDto } from './dto/get-system-health-response.dto
 import { MemoryUsageService } from 'src/models/memory-usage/memory-usage.service';
 import { HealthCannotSetEnvironmentVariableException } from './health.errors';
 import { HealthEntity } from './domain/health.entity';
+import { HealthStatus } from './__types__/health.types';
+import { HealthMapper } from './domain/health.mapper';
 
 @Injectable()
 export class HealthService {
@@ -38,10 +40,10 @@ export class HealthService {
       this.logger.error(dbResult.reason.stack || dbResult.reason);
     }
 
-    const details: HealthEntity = {
-      status: dbHealthy ? 'healthy' : 'unhealthy',
+    const details = HealthMapper.toDomain({
+      status: dbHealthy ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY,
       memoryUsage: memoryUsage ?? null,
-    };
+    });
 
     return {
       service,

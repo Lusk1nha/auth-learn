@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MemoryUsageCannotBeRetrievedException } from './memory-usage.errors';
-import { MemoryUsageRaw } from './__types__/memory.types';
+import { MemoryUsageRaw } from './__types__/memory-usage.types';
 import { MemoryUsageMapper } from './domain/memory-usage.mapper';
 import { MemoryUsageEntity } from './domain/memory-usage.entity';
 

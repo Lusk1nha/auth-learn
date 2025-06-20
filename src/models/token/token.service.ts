@@ -61,7 +61,7 @@ export class TokenService {
     expiresIn: string,
   ): Promise<TokenRaw> {
     try {
-      const token = this.jwtService.sign(payload, {
+      const token = await this.jwtService.signAsync(payload, {
         secret,
         algorithm: 'HS256',
         expiresIn,

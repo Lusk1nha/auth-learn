@@ -7,6 +7,14 @@ import { EmailAddressFactory } from 'src/common/entities/email-address/email-add
 import { faker } from '@faker-js/faker/.';
 import { RegisterUserResponseDto } from './dto/register-user-response.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
+import { UserMapper } from '../users/domain/user.mapper';
+import { generateSingleMockUser } from '../users/__mock__/users.mock';
+import { SessionTokens } from './__types__/auth.types';
+import { TokenMapper } from '../token/domain/token.mapper';
+import { generateSingleMockToken } from '../token/__mock__/token.mock';
+import { LoginUserDto } from './dto/login-user.dto';
+import { ResponseDecoratorOptions } from '@nestjs/common';
+import { LoginUserResponseDto } from './dto/login-user-response.dto';
 
 describe(AuthController.name, () => {
   let controller: AuthController;
@@ -68,6 +76,40 @@ describe(AuthController.name, () => {
   describe('login route', () => {
     it(`should be defined ${AuthController.prototype.login.name}`, () => {
       expect(controller.login).toBeDefined();
+    });
+
+    it(`should call ${AuthService.prototype.login.name} when route is called with correct data`, async () => {
+      const dto: LoginUserDto = {
+        email: faker.internet.email(),
+        password: faker.internet.password(),
+      };
+
+      const user = UserMapper.toDomain(
+        generateSingleMockUser({
+          email: dto.email,
+        }),
+      );
+
+      const sessionTokens: SessionTokens = {
+        accessToken: TokenMapper.toDomain(generateSingleMockToken()),
+        refreshToken: TokenMapper.toDomain(generateSingleMockToken()),
+      };
+
+      jest.spyOn(authService, 'login').mockResolvedValueOnce({
+        user: user,
+        accessToken: sessionTokens.accessToken,
+        refreshToken: sessionTokens.refreshToken,
+      });
+
+      const result = await controller.login({ cookie: () => {} }, dto);
+      
+
+      expect(result).toBeDefined();
+      expect(result).toBeInstanceOf(LoginUserResponseDto);
+      expect(result.user).toBeInstanceOf(UserEntity);
+      expect(result.user).toEqual(user);
+      expect(result.accessToken).toEqual(sessionTokens.accessToken.token);
+      expect(authService.login).toHaveBeenCalledWith(dto);
     });
   });
 });

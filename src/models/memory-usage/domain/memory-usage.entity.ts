@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MemoryUsageRaw } from '../__types__/memory.types';
+import { MemoryUsageRaw } from '../__types__/memory-usage.types';
 
 export class MemoryUsageEntity {
   constructor(raw: MemoryUsageRaw) {

@@ -1,4 +1,4 @@
-import { MemoryUsageRaw } from '../__types__/memory.types';
+import { MemoryUsageRaw } from '../__types__/memory-usage.types';
 import { MemoryUsageEntity } from './memory-usage.entity';
 
 export class MemoryUsageMapper {
